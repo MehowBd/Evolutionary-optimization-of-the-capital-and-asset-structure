@@ -106,6 +106,11 @@ def read_excel_files(path):
 excel_data = read_excel_files("./Market_Value/")
 
 
+def trim_element(element):
+    if isinstance(element, str):  # Check if element is a string
+        return element.strip()  # Trim whitespace
+    return element  # Return unchanged if not a string
+
 def separate_data_by_company(excel_data):
 
     company_dfs = {}
@@ -116,7 +121,7 @@ def separate_data_by_company(excel_data):
               df.drop(columns = ['Lp./ No'])
             if 'Unnamed: 9' in df.columns: #delete empty/irrelevent columns
               df.drop(columns = ['Unnamed: 9'])
-            for col in df.columns: #Company column named differently in several files
+            for col in df.columns:
                 if 'Spółka/ Company' in col:
                     company_col = col
                     break
@@ -139,6 +144,8 @@ def separate_data_by_company(excel_data):
             if company_col is None:
                 raise ValueError(f"Company column not found in the DataFrame, sheet_name={sheet_name}, year = {year}")
 
+            df[company_col] = df[company_col].apply(trim_element)
+
             for company, group in df.groupby(by=company_col):
                 if company not in company_dfs:
                     # Initialize DataFrame with columns corresponding to each year
@@ -148,3 +155,4 @@ def separate_data_by_company(excel_data):
     for company, df in company_dfs.items():
         company_dfs[company] = df.sort_index(axis=1)
     return company_dfs
+company_data = separate_data_by_company(excel_data)
