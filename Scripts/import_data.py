@@ -4,6 +4,9 @@ import glob
 import os
 import csv
 
+file_paths = ["Rocznik_2014__GR.xls", "Rocznik_2015__GR.xls", "Rocznik_2016__GR.xls", "Rocznik_2017_GR.xls", "Rocznik_2018_GR.xls", "Rocznik_2019_GR.xls",
+              "Rocznik_2020_GR.xls", "Rocznik_2021_GR.xls", "Rocznik_2022_GR.xls"]
+
 def import_companies_balance_sheet():
     #get path to files in folder
     path_to_files = './Companies_Balance_sheet/*.xlsx'
@@ -41,29 +44,25 @@ def import_companies_balance_sheet():
             for cell in row:
                 if cell.value is not None:
                     index_values.append(cell.value)
-
         # Convert the list of lists to a DataFrame
         df = pd.DataFrame(cell_values, index=index_values, columns=['2017', '2018', '2019', '2020', '2021'])
-        
+
         # Add Dataframe for scructure into dataframe of all structures
         filename_without_extension = os.path.splitext(os.path.basename(file_path))[0]
         data_dict[filename_without_extension] = df
 
     csv_file = './Data/companies_balance_sheet.csv'
-    with open(csv_file, 'w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=list(data_dict.keys()))
-        
-        # Write the header
-        writer.writeheader()
-        
-        # Write the data
-        writer.writerow(data_dict)
+    combined_df = pd.concat(data_dict.values(), keys=data_dict.keys())
+    combined_df.to_csv(csv_file, sep=';', index=True) 
+
     return data_dict
 
-
-file_paths = ["Rocznik_2014__GR.xls", "Rocznik_2015__GR.xls", "Rocznik_2016__GR.xls", "Rocznik_2017_GR.xls", "Rocznik_2018_GR.xls", "Rocznik_2019_GR.xls",
-              "Rocznik_2020_GR.xls", "Rocznik_2021_GR.xls", "Rocznik_2022_GR.xls"]
-
+def import_csv_dict_of_dataframes(csv_file):
+    csv_dict = {}
+    combined_df = pd.read_csv(csv_file, sep=';', index_col=[0, 1])
+    for key, df in combined_df.groupby(level=0):
+        csv_dict[key] = df
+    return csv_dict
 
 def create_helper_dicts():
 
@@ -103,7 +102,6 @@ def read_excel_files(path):
 
     print(excel_data.keys())
     return excel_data
-excel_data = read_excel_files("./Market_Value/")
 
 
 def trim_element(element):
@@ -155,4 +153,4 @@ def separate_data_by_company(excel_data):
     for company, df in company_dfs.items():
         company_dfs[company] = df.sort_index(axis=1)
     return company_dfs
-company_data = separate_data_by_company(excel_data)
+
