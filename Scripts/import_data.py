@@ -22,7 +22,7 @@ def import_companies_balance_sheet():
         # Select the worksheet by name
         sheet = workbook[sheet_name]   
 
-        cell_ranges = ['C1:C26', 'X1:AB26']
+        cell_ranges = ['C29:C94', 'X29:AB94']
 
         # Initialize an empty list to store the cell values
 
@@ -35,15 +35,12 @@ def import_companies_balance_sheet():
         cell_values = []
         for row in sheet[cell_ranges[1]]:
             row_values = [cell.value for cell in row]
-            if row_values:
-                cell_values.append(row_values)
-
+            cell_values.append(row_values)
         # Extract index values
         index_values = []
         for row in sheet[cell_ranges[0]]:
             for cell in row:
-                if cell.value is not None:
-                    index_values.append(cell.value)
+                index_values.append(cell.value)
         # Convert the list of lists to a DataFrame
         df = pd.DataFrame(cell_values, index=index_values, columns=['2017', '2018', '2019', '2020', '2021'])
 
